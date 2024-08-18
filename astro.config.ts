@@ -26,7 +26,7 @@ export default defineConfig({
 	site: "https://sanabel-al-firdaws.github.io",
 	markdown: {
 				gfm: false,
-				remarkPlugins: [remarkCustomHeaderId, remarkMark]
+				remarkPlugins: [remarkCustomHeaderId, remarkMark],
 				rehypePlugins: [[rehypeAutolinkHeadings, {
 				  // Wrap the heading text in a link.
 				  behavior: "wrap",
