@@ -1,0 +1,1198 @@
+diff --git a/node_modules/starlight-blog/components/Metadata.astro b/node_modules/starlight-blog/components/Metadata.astro
+index 24434ed..9e749df 100644
+--- a/node_modules/starlight-blog/components/Metadata.astro
++++ b/node_modules/starlight-blog/components/Metadata.astro
+@@ -11,23 +11,33 @@ interface Props {
+ }
+ 
+ const { entry, showBadges = true } = Astro.props
+-const { authors, date, lastUpdated } = getBlogEntryMetadata(entry)
++const { authors, lastUpdated } = getBlogEntryMetadata(entry)
+ 
+ const hasAuthors = authors.length > 0
+ ---
+ 
+ <div class="metadata not-content">
+-  <div class="dates">
++  <div >
+     <time datetime={entry.data.date.toISOString()}>
+-      {date}
++      {new Intl.DateTimeFormat("ar-SA", {
++        "day": "numeric",
++"month": "long",
++"year": "numeric",
++"numberingSystem": "latn"
++   }).format(entry.data.date)}
+     </time>
+     { 
+       lastUpdated !== undefined &&
+       typeof entry.data.lastUpdated !== 'boolean' &&
+       entry.data.lastUpdated?.toISOString() !== entry.data.date.toISOString() ? (
+         <span class="update-date">
+-          - Last update:
+-          <time datetime={entry.data.lastUpdated?.toISOString()}>{lastUpdated}</time>
++          - آخر تحديث:
++          <time datetime={entry.data.lastUpdated?.toISOString()}>{new Intl.DateTimeFormat("ar-SA", {
++        "day": "numeric",
++"month": "long",
++"year": "numeric",
++"numberingSystem": "latn"
++   }).format(entry.data.lastUpdated)}</time>
+         </span>
+       ) : null
+     }
+@@ -41,6 +51,8 @@ const hasAuthors = authors.length > 0
+       </div>
+     ) : null
+   }
++
++
+   {
+     showBadges && (entry.data?.draft || entry.data.featured) && (
+       <div class="badges">
+@@ -52,15 +64,8 @@ const hasAuthors = authors.length > 0
+ </div>
+ 
+ <style>
+-  .metadata {
+-    display: flex;
+-    flex-direction: column;
+-    gap: 0.75rem;
+-  }
+ 
+-  .dates {
+-    font-size: var(--sl-text-sm);
+-  }
++
+ 
+   .update-date {
+     color: var(--sl-color-gray-3);
+diff --git a/node_modules/starlight-blog/components/PostTags.astro b/node_modules/starlight-blog/components/PostTags.astro
+index 39c4dfb..c1585a9 100644
+--- a/node_modules/starlight-blog/components/PostTags.astro
++++ b/node_modules/starlight-blog/components/PostTags.astro
+@@ -15,7 +15,7 @@ const tags = getEntryTags(entry)
+ {
+   tags.length > 0 ? (
+     <div>
+-      <b>Tags: </b>
++      <b>الأقسام: </b>
+       <ul>
+         {tags.map((tag) => (
+           <li>
+diff --git a/node_modules/starlight-blog/components/Posts.astro b/node_modules/starlight-blog/components/Posts.astro
+index b0769db..cc53943 100644
+--- a/node_modules/starlight-blog/components/Posts.astro
++++ b/node_modules/starlight-blog/components/Posts.astro
+@@ -11,10 +11,20 @@ const { entries } = Astro.props
+ ---
+ 
+ <div class="posts">
+-  {entries.map((entry) => <Preview {entry} />)}
++  {entries.map((entry) => 
++  <Preview {entry}
++  
++  />
++<hr>
++)
++  
++  }
+ </div>
+ 
+ <style>
++  hr{
++    border: 5px solid var(--sl-color-gray-6) !important;
++  }
+   .posts {
+     display: flex;
+     flex-direction: column;
+diff --git a/node_modules/starlight-blog/components/Preview.astro b/node_modules/starlight-blog/components/Preview.astro
+index 4c8dee8..d55b39f 100644
+--- a/node_modules/starlight-blog/components/Preview.astro
++++ b/node_modules/starlight-blog/components/Preview.astro
+@@ -35,14 +35,10 @@ const Excerpt = await getBlogEntryExcerpt(entry)
+   .preview {
+     display: flex;
+     flex-direction: column;
+-    gap: 1.5rem;
+-  }
+   
+-  h2 {
+-    margin-bottom: 1.5rem;
+   }
+ 
+-  h2 a {
+-    text-decoration: none;
+-  }
++
++
++
+ </style>
+diff --git a/node_modules/starlight-blog/libs/string.ts b/node_modules/starlight-blog/libs/string.ts
+index 74b84a6..72268b9 100644
+--- a/node_modules/starlight-blog/libs/string.ts
++++ b/node_modules/starlight-blog/libs/string.ts
+@@ -1,11 +1,11 @@
+-const pluralRules = new Intl.PluralRules('en-US')
++const pluralRules = new Intl.PluralRules('ar-SA')
+ 
+ export function pluralize(count: number, singular: string, plural: string) {
+   const rule = pluralRules.select(count)
+ 
+   switch (rule) {
+     case 'one': {
+-      return `${count} ${singular}`
++      return ` ${singular} واحد`
+     }
+     case 'other': {
+       return `${count} ${plural}`
+diff --git a/node_modules/starlight-blog/libs/tags.ts b/node_modules/starlight-blog/libs/tags.ts
+index dcba275..4c81d72 100644
+--- a/node_modules/starlight-blog/libs/tags.ts
++++ b/node_modules/starlight-blog/libs/tags.ts
+@@ -61,6 +61,7 @@ interface StarlightBlogEntryTag {
+ type StarlightBlogEntryTags = Map<
+   StarlightBlogEntryTagSlug,
+   {
++    
+     entries: StarlightBlogEntry[]
+     label: StarlightBlogEntryTag['label']
+   }
+diff --git a/node_modules/starlight-blog/routes/Tags.astro b/node_modules/starlight-blog/routes/Tags.astro
+index 4d3301e..cf27310 100644
+--- a/node_modules/starlight-blog/routes/Tags.astro
++++ b/node_modules/starlight-blog/routes/Tags.astro
+@@ -21,7 +21,7 @@ const pageProps = getPageProps(label)
+ ---
+ 
+ <Page {...pageProps}>
+-  <div class="count">{pluralize(entries.length, 'post', 'posts')} with the tag &ldquo;{label}&rdquo;</div>
++  <div class="count">{pluralize(entries.length, 'مقال', 'مقالات')} في قسم {label}</div>
+   <Posts {entries} />
+ </Page>
+ 
+diff --git a/node_modules/starlight-blog/tests/e2e/blog.test.ts b/node_modules/starlight-blog/tests/e2e/blog.test.ts
+new file mode 100644
+index 0000000..25444dd
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/blog.test.ts
+@@ -0,0 +1,228 @@
++import { expect, test } from './test'
++
++test('should add a blog link to all pages with the configured title', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.getByRole('link', { exact: true, name: 'Demo Blog' })).toBeVisible()
++})
++
++test('should use the configured title for the page', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.title()).resolves.toMatch('Blog')
++})
++
++test('should not display the content panel containing the title', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.getByRole('heading', { level: 1 })).not.toBeVisible()
++})
++
++test('should create the blog post list pages', async ({ blogPage }) => {
++  let response = await blogPage.goto()
++
++  expect(response?.ok()).toBe(true)
++
++  response = await blogPage.goto(1)
++
++  expect(response?.ok()).toBe(false)
++
++  response = await blogPage.goto(2)
++
++  expect(response?.ok()).toBe(true)
++
++  response = await blogPage.goto(3)
++
++  expect(response?.ok()).toBe(true)
++
++  response = await blogPage.goto(4)
++
++  expect(response?.ok()).toBe(false)
++
++  response = await blogPage.goto(5)
++
++  expect(response?.ok()).toBe(false)
++})
++
++test('should display navigation links', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.prevLink).not.toBeVisible()
++  await expect(blogPage.nextLink).toBeVisible()
++
++  await blogPage.goto(2)
++
++  await expect(blogPage.prevLink).toBeVisible()
++  await expect(blogPage.nextLink).toBeVisible()
++
++  await blogPage.goto(3)
++
++  await expect(blogPage.prevLink).toBeVisible()
++  await expect(blogPage.nextLink).not.toBeVisible()
++})
++
++test('should add a link to all posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const link = blogPage.page.getByRole('link', { name: 'All posts' })
++
++  await expect(link).toBeVisible()
++  expect(await link.getAttribute('href')).toBe('/blog')
++})
++
++test('should add links to recent posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const groupName = 'Recent posts'
++  const group = blogPage.page.getByRole('group').filter({ hasText: groupName })
++
++  await expect(group.getByText(groupName, { exact: true })).toBeVisible()
++
++  expect(await group.getByRole('link').count()).toBe(10)
++})
++
++test('should not add recent draft blog posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const group = blogPage.page.getByRole('group').filter({ hasText: 'Recent posts' })
++
++  await expect(group.getByRole('link', { exact: true, name: 'Succedere velut consumptis ferat' })).not.toBeVisible()
++})
++
++test('should add links to featured posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const groupName = 'Featured posts'
++  const group = blogPage.page.getByRole('group').filter({ hasText: groupName })
++
++  await expect(group.getByText(groupName, { exact: true })).toBeVisible()
++
++  expect(await group.getByRole('link').count()).toBe(1)
++})
++
++test('should not add links to featured posts in the sidebar recent posts group', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const group = blogPage.page.getByRole('group').filter({ hasText: 'Recent posts' })
++
++  expect(await group.textContent()).not.toContain('Vario nunc polo')
++})
++
++test('should add links to tags in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const groupName = 'Tags'
++  const group = blogPage.page.getByRole('group').filter({ hasText: groupName })
++
++  await expect(group.getByText(groupName, { exact: true })).toBeVisible()
++
++  const links = group.getByRole('link')
++
++  expect(await links.count()).toBe(8)
++
++  await expect(links.nth(0)).toContainText('Starlight')
++  await expect(links.nth(1)).toContainText('Example')
++  await expect(links.nth(2)).toContainText('Placeholder')
++  await expect(links.nth(3)).toContainText('Amazing Content')
++  await expect(links.nth(4)).toContainText('Demo')
++  await expect(links.nth(5)).toContainText('Ipsum')
++  await expect(links.nth(6)).toContainText('Lorem')
++  await expect(links.nth(7)).toContainText('Test')
++})
++
++test('should not add links to tags from draft blog posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(
++    blogPage.page.getByRole('group').filter({ hasText: 'Tags' }).getByRole('link', { exact: true, name: 'WIP (1)' }),
++  ).not.toBeVisible()
++})
++
++test('should not count tags from draft blog posts in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(
++    blogPage.page
++      .getByRole('group')
++      .filter({ hasText: 'Tags' })
++      .getByRole('link', { exact: true, name: 'Placeholder (2)' }),
++  ).toBeVisible()
++})
++
++test('should display a preview of each posts', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const articles = blogPage.page.getByRole('article')
++
++  expect(await articles.count()).toBe(5)
++
++  const titles = articles.getByRole('heading', { level: 2 })
++
++  expect(await titles.count()).toBe(5)
++  expect(await titles.getByRole('link').count()).toBe(5)
++
++  await expect(articles.first().getByText('Donec eget vestibulum leo.')).toBeVisible()
++})
++
++test('should use sorted posts', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const times = await blogPage.page.getByRole('article').locator(':not(.update-date) > time').all()
++  const datetimes = await Promise.all(times.map((time) => time.getAttribute('datetime')))
++
++  const dates = datetimes.map((datetime) => {
++    if (!datetime) {
++      throw new Error('Missing datetime attribute.')
++    }
++
++    return new Date(datetime)
++  })
++
++  const sortedDates = [...dates].sort((a, b) => b.getTime() - a.getTime())
++
++  expect(dates).toEqual(sortedDates)
++})
++
++test('should not display a link to edit this page', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.getByText('Edit page')).not.toBeVisible()
++})
++
++test('should render markdown content in custom excerpt', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const articles = blogPage.page.getByRole('article')
++
++  await expect(articles.first().locator('strong').getByText('vestibulum')).toBeVisible()
++})
++
++test('should not list draft blog posts in production', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(
++    blogPage.page.getByRole('article').getByRole('link', { exact: true, name: 'Succedere velut consumptis ferat' }),
++  ).not.toBeVisible()
++
++  await blogPage.goto(2)
++
++  await expect(
++    blogPage.page.getByRole('article').getByRole('link', { exact: true, name: 'Pertimuit munere' }),
++  ).not.toBeVisible()
++})
++
++test('should add a link to the RSS feed in the sidebar', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  const link = blogPage.page.getByLabel('Main').getByRole('link', { name: 'RSS' })
++
++  await expect(link).toBeVisible()
++  expect(await link.getAttribute('href')).toBe('/blog/rss.xml')
++})
++
++test('should not include Starlight pagination links', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.locator('.pagination-links a[rel="prev"]')).not.toBeVisible()
++  await expect(blogPage.page.locator('.pagination-links a[rel="next"]')).not.toBeVisible()
++})
+diff --git a/node_modules/starlight-blog/tests/e2e/fixtures/BlogPage.ts b/node_modules/starlight-blog/tests/e2e/fixtures/BlogPage.ts
+new file mode 100644
+index 0000000..463d5a9
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/fixtures/BlogPage.ts
+@@ -0,0 +1,17 @@
++import type { Page } from '@playwright/test'
++
++export class BlogPage {
++  constructor(public readonly page: Page) {}
++
++  goto(index?: number) {
++    return this.page.goto(`/blog${index ? `/${index}` : ''}`)
++  }
++
++  get nextLink() {
++    return this.page.getByRole('link', { name: 'Older Posts' })
++  }
++
++  get prevLink() {
++    return this.page.getByRole('link', { name: 'Newer Posts' })
++  }
++}
+diff --git a/node_modules/starlight-blog/tests/e2e/fixtures/PostPage.ts b/node_modules/starlight-blog/tests/e2e/fixtures/PostPage.ts
+new file mode 100644
+index 0000000..c5f0dec
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/fixtures/PostPage.ts
+@@ -0,0 +1,17 @@
++import type { Page } from '@playwright/test'
++
++export class PostPage {
++  constructor(public readonly page: Page) {}
++
++  goto(slug: string) {
++    return this.page.goto(`/blog/${slug}`)
++  }
++
++  get nextLink() {
++    return this.page.locator('css=[rel="next"]')
++  }
++
++  get prevLink() {
++    return this.page.locator('css=[rel="prev"]')
++  }
++}
+diff --git a/node_modules/starlight-blog/tests/e2e/fixtures/TagsPage.ts b/node_modules/starlight-blog/tests/e2e/fixtures/TagsPage.ts
+new file mode 100644
+index 0000000..db759db
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/fixtures/TagsPage.ts
+@@ -0,0 +1,9 @@
++import type { Page } from '@playwright/test'
++
++export class TagsPage {
++  constructor(public readonly page: Page) {}
++
++  goto(tag: string) {
++    return this.page.goto(`/blog/tags/${tag}`)
++  }
++}
+diff --git a/node_modules/starlight-blog/tests/e2e/post.test.ts b/node_modules/starlight-blog/tests/e2e/post.test.ts
+new file mode 100644
+index 0000000..5edda76
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/post.test.ts
+@@ -0,0 +1,102 @@
++import { expect, test } from './test'
++
++test('should fallback to the config author is none are provided in the frontmatter', async ({ postPage }) => {
++  await postPage.goto('nitidum-fuit')
++
++  await expect(postPage.page.getByRole('link', { name: 'HiDeoo' })).toBeVisible()
++})
++
++test('should use the referenced author in the frontmatter', async ({ postPage }) => {
++  await postPage.goto('funda-pro')
++
++  await expect(postPage.page.getByRole('link', { name: 'HiDeoo' })).toBeVisible()
++})
++
++test('should use the author specified in the frontmatter', async ({ postPage }) => {
++  await postPage.goto('spectat-fingit')
++
++  await expect(postPage.page.getByRole('link', { name: 'Ghost' })).toBeVisible()
++})
++
++test('should use the authors specified in the frontmatter', async ({ postPage }) => {
++  await postPage.goto('haerent-huc-curae')
++
++  await expect(postPage.page.getByRole('link', { name: 'Ghost' })).toBeVisible()
++  await expect(postPage.page.getByRole('link', { name: 'Astro' })).toBeVisible()
++})
++
++test('should use the referenced authors specified in the frontmatter', async ({ postPage }) => {
++  await postPage.goto('iove-ad-thyrsos-sororis')
++
++  await expect(postPage.page.getByRole('link', { name: 'Ghost' })).toBeVisible()
++  await expect(postPage.page.getByRole('link', { name: 'HiDeoo' })).toBeVisible()
++})
++
++test('should display author title', async ({ postPage }) => {
++  await postPage.goto('sequantur-quaeritis-tandem')
++
++  await expect(postPage.page.getByRole('link', { name: 'Starlight Aficionado' })).toBeVisible()
++})
++
++test('should not display tags in a post not having tags', async ({ postPage }) => {
++  await postPage.goto('mihi-terrae-somnia')
++
++  await expect(postPage.page.getByText('Tags: ', { exact: true })).not.toBeVisible()
++})
++
++test('should display tags in a post having tags', async ({ postPage }) => {
++  await postPage.goto('tollere-cepit-formidabilis-currere')
++
++  await expect(postPage.page.getByText('Tags: ', { exact: true })).toBeVisible()
++
++  const starlightTag = postPage.page.getByRole('link', { exact: true, name: 'Starlight' })
++  const amazingContentTag = postPage.page.getByRole('link', { exact: true, name: 'Amazing Content' })
++
++  await expect(starlightTag).toBeVisible()
++  expect(await starlightTag.getAttribute('href')).toBe('/blog/tags/starlight')
++
++  await expect(amazingContentTag).toBeVisible()
++  expect(await amazingContentTag.getAttribute('href')).toBe('/blog/tags/amazing-content')
++})
++
++test('should display navigation links', async ({ postPage }) => {
++  await postPage.goto('nitidum-fuit')
++
++  await expect(postPage.prevLink).toBeVisible()
++  expect(await postPage.prevLink.getAttribute('href')).toBe('/blog/funda-pro')
++  await expect(postPage.nextLink).not.toBeVisible()
++
++  await postPage.goto('funda-pro')
++
++  await expect(postPage.prevLink).toBeVisible()
++  expect(await postPage.prevLink.getAttribute('href')).toBe('/blog/spectat-fingit')
++  await expect(postPage.nextLink).toBeVisible()
++  expect(await postPage.nextLink.getAttribute('href')).toBe('/blog/nitidum-fuit')
++
++  await postPage.goto('vario-nunc-polo')
++
++  await expect(postPage.prevLink).toBeVisible()
++  expect(await postPage.prevLink.getAttribute('href')).toBe('/blog/sequantur-quaeritis-tandem')
++  await expect(postPage.nextLink).toBeVisible()
++  expect(await postPage.nextLink.getAttribute('href')).toBe('/blog/mihi-terrae-somnia')
++
++  await postPage.goto('sequantur-quaeritis-tandem')
++
++  await expect(postPage.prevLink).not.toBeVisible()
++  await expect(postPage.nextLink).toBeVisible()
++  expect(await postPage.nextLink.getAttribute('href')).toBe('/blog/vario-nunc-polo')
++})
++
++test('should include a cover image', async ({ postPage }) => {
++  await postPage.goto('vario-nunc-polo')
++
++  await expect(postPage.page.getByRole('img', { name: 'A cover' })).toBeVisible()
++})
++
++test('should include cover images for dark and light mode', async ({ postPage }) => {
++  await postPage.goto('ipsum-nunc-aliquet')
++
++  await expect(postPage.page.getByRole('img', { name: 'Different covers in dark and light mode' })).toBeVisible()
++
++  expect(await postPage.page.locator('figure img').count()).toBe(2)
++})
+diff --git a/node_modules/starlight-blog/tests/e2e/rss.test.ts b/node_modules/starlight-blog/tests/e2e/rss.test.ts
+new file mode 100644
+index 0000000..febda0d
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/rss.test.ts
+@@ -0,0 +1,7 @@
++import { expect, test } from './test'
++
++test('should add a Starlight social link to the RSS feed', async ({ blogPage }) => {
++  await blogPage.goto()
++
++  await expect(blogPage.page.getByRole('banner').getByRole('link', { name: 'RSS' })).toBeVisible()
++})
+diff --git a/node_modules/starlight-blog/tests/e2e/tags.test.ts b/node_modules/starlight-blog/tests/e2e/tags.test.ts
+new file mode 100644
+index 0000000..a7d24ae
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/tags.test.ts
+@@ -0,0 +1,50 @@
++import { expect, test } from './test'
++
++test('should display a preview of each posts with proper tag', async ({ tagsPage }) => {
++  const tag = 'Starlight'
++  const count = 4
++
++  await tagsPage.goto(tag.toLowerCase())
++
++  await expect(tagsPage.page.getByText(`${count} posts with the tag “${tag}”`, { exact: true })).toBeVisible()
++
++  const articles = tagsPage.page.getByRole('article')
++
++  expect(await articles.count()).toBe(count)
++
++  for (const article of await articles.all()) {
++    expect(await article.getByRole('listitem').filter({ hasText: tag }).count()).toBe(1)
++  }
++})
++
++test('should not include draft blog posts', async ({ tagsPage }) => {
++  const tag = 'Placeholder'
++  const count = 2
++
++  await tagsPage.goto(tag.toLowerCase())
++
++  await expect(tagsPage.page.getByText(`${count} posts with the tag “${tag}”`, { exact: true })).toBeVisible()
++
++  const articles = tagsPage.page.getByRole('article')
++
++  expect(await articles.count()).toBe(count)
++})
++
++test('should not display a link to edit this page', async ({ tagsPage }) => {
++  await tagsPage.goto('starlight')
++
++  await expect(tagsPage.page.getByText('Edit page')).not.toBeVisible()
++})
++
++test('should not generate pages for tags with only draft blog posts', async ({ tagsPage }) => {
++  const response = await tagsPage.goto('wip')
++
++  expect(response?.ok()).toBe(false)
++})
++
++test('should not include Starlight pagination links', async ({ tagsPage }) => {
++  await tagsPage.goto('starlight')
++
++  await expect(tagsPage.page.locator('.pagination-links a[rel="prev"]')).not.toBeVisible()
++  await expect(tagsPage.page.locator('.pagination-links a[rel="next"]')).not.toBeVisible()
++})
+diff --git a/node_modules/starlight-blog/tests/e2e/test.ts b/node_modules/starlight-blog/tests/e2e/test.ts
+new file mode 100644
+index 0000000..ef642c1
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/e2e/test.ts
+@@ -0,0 +1,31 @@
++import { test as base } from '@playwright/test'
++
++import { BlogPage } from './fixtures/BlogPage'
++import { PostPage } from './fixtures/PostPage'
++import { TagsPage } from './fixtures/TagsPage'
++
++export { expect } from '@playwright/test'
++
++export const test = base.extend<Fixtures>({
++  blogPage: async ({ page }, use) => {
++    const blogPage = new BlogPage(page)
++
++    await use(blogPage)
++  },
++  postPage: async ({ page }, use) => {
++    const postPage = new PostPage(page)
++
++    await use(postPage)
++  },
++  tagsPage: async ({ page }, use) => {
++    const tagsPage = new TagsPage(page)
++
++    await use(tagsPage)
++  },
++})
++
++interface Fixtures {
++  blogPage: BlogPage
++  postPage: PostPage
++  tagsPage: TagsPage
++}
+diff --git a/node_modules/starlight-blog/tests/unit/basics/i18n.test.ts b/node_modules/starlight-blog/tests/unit/basics/i18n.test.ts
+new file mode 100644
+index 0000000..0c6fd43
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/basics/i18n.test.ts
+@@ -0,0 +1,59 @@
++import type { StarlightUserConfig } from '@astrojs/starlight/types'
++import { describe, expect, test } from 'vitest'
++
++import { getDefaultLocale } from '../../../libs/i18n'
++
++describe('getDefaultLocale', () => {
++  test('returns the default locale for the built-in default locale', () => {
++    expect(getTestDefaultLocale({})).toBe('en')
++  })
++
++  test('returns the default locale with a root locale', () => {
++    expect(
++      getTestDefaultLocale({
++        locales: {
++          root: { label: 'Français', lang: 'fr' },
++        },
++      }),
++    ).toBe('fr')
++  })
++
++  test('returns the default locale with a root locale and a default locale', () => {
++    expect(
++      getTestDefaultLocale({
++        defaultLocale: 'root',
++        locales: {
++          root: { label: 'Français', lang: 'fr' },
++          'zh-cn': { label: '简体中文', lang: 'zh-CN' },
++        },
++      }),
++    ).toBe('fr')
++  })
++
++  test('returns the default locale with no root locale', () => {
++    expect(
++      getTestDefaultLocale({
++        defaultLocale: 'fr',
++        locales: {
++          fr: { label: 'Français', lang: 'fr' },
++          'zh-cn': { label: '简体中文', lang: 'zh-CN' },
++        },
++      }),
++    ).toBe('fr')
++  })
++
++  test('returns the default locale with non root single locale', () => {
++    expect(
++      getTestDefaultLocale({
++        defaultLocale: 'fr',
++        locales: {
++          fr: { label: 'Français', lang: 'fr' },
++        },
++      }),
++    ).toBe('fr')
++  })
++})
++
++function getTestDefaultLocale(config: Partial<StarlightUserConfig>) {
++  return getDefaultLocale(config as StarlightUserConfig)
++}
+diff --git a/node_modules/starlight-blog/tests/unit/basics/page.test.ts b/node_modules/starlight-blog/tests/unit/basics/page.test.ts
+new file mode 100644
+index 0000000..2122632
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/basics/page.test.ts
+@@ -0,0 +1,55 @@
++import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
++
++import { getBlogPathWithBase, getPathWithBase } from '../../../libs/page'
++
++describe('getBlogPathWithBase', () => {
++  test('returns the blog root path', () => {
++    expect(getBlogPathWithBase('/')).toBe('/blog')
++  })
++
++  test('returns a blog post path', () => {
++    expect(getBlogPathWithBase('/post-1')).toBe('/blog/post-1')
++  })
++
++  test('returns the RSS feed path', () => {
++    expect(getBlogPathWithBase('/rss.xml', true)).toBe('/blog/rss.xml')
++  })
++})
++
++describe('getPathWithBase', () => {
++  describe('with no base', () => {
++    test('returns the path with no base', () => {
++      expect(getPathWithBase('/blog')).toBe('/blog')
++    })
++
++    test('prefixes the path with a leading slash if needed', () => {
++      expect(getPathWithBase('blog')).toBe('/blog')
++    })
++  })
++
++  describe('with a base', () => {
++    beforeEach(() => {
++      vi.stubEnv('BASE_URL', '/base/')
++      vi.resetModules()
++    })
++
++    afterEach(() => {
++      vi.unstubAllEnvs()
++    })
++
++    test('returns the path prefixed with the base', async () => {
++      const { getPathWithBase } = await import('../../../libs/page')
++      expect(getPathWithBase('/blog')).toBe('/base/blog')
++    })
++  })
++
++  describe('trailingSlash', () => {
++    test('does not strip trailing slashes', () => {
++      expect(getPathWithBase('/blog/')).toBe('/blog/')
++    })
++
++    test('does not ensure trailing slashes', () => {
++      expect(getPathWithBase('/blog')).toBe('/blog')
++    })
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/basics/prev-next.test.ts b/node_modules/starlight-blog/tests/unit/basics/prev-next.test.ts
+new file mode 100644
+index 0000000..611a484
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/basics/prev-next.test.ts
+@@ -0,0 +1,38 @@
++import { describe, expect, test, vi } from 'vitest'
++
++import { getBlogEntry, getBlogStaticPaths } from '../../../libs/content'
++
++vi.mock('astro:content', async () => {
++  const { mockBlogPosts } = await import('../utils')
++
++  return mockBlogPosts([
++    ['post-7.md', { title: 'Home Page', date: new Date('2024-02-24') }],
++    ['post-6.md', { title: 'Home Page', date: new Date('2024-01-24') }],
++    ['post-5.md', { title: 'Home Page', date: new Date('2023-12-24') }],
++    ['post-4.md', { title: 'Home Page', date: new Date('2023-11-24') }],
++    ['post-3.md', { title: 'Home Page', date: new Date('2023-10-24') }],
++    ['post-2.md', { title: 'Home Page', date: new Date('2023-09-24') }],
++    ['post-1.md', { title: 'Home Page', date: new Date('2023-08-24') }],
++  ])
++})
++
++describe('getBlogStaticPaths', () => {
++  test('respects the `prevNextLinksOrder` option in `reverse-chronological` order', async () => {
++    const [firstPage, secondPage] = await getBlogStaticPaths()
++
++    expect(firstPage?.props.prevLink).toBeUndefined()
++    expect(firstPage?.props.nextLink).toBeDefined()
++
++    expect(secondPage?.props.prevLink).toBeDefined()
++    expect(secondPage?.props.nextLink).toBeUndefined()
++  })
++})
++
++describe('getBlogEntry', () => {
++  test('respects the `prevNextLinksOrder` option in `reverse-chronological` order', async () => {
++    const post = await getBlogEntry('/blog/post-6')
++
++    expect(post.prevLink?.href).toBe('/blog/post-7')
++    expect(post.nextLink?.href).toBe('/blog/post-5')
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/basics/rss.test.ts b/node_modules/starlight-blog/tests/unit/basics/rss.test.ts
+new file mode 100644
+index 0000000..aec8d6f
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/basics/rss.test.ts
+@@ -0,0 +1,57 @@
++import type { RSSFeedItem } from '@astrojs/rss'
++import { describe, expect, test, vi } from 'vitest'
++
++import { getRSSOptions } from '../../../libs/rss'
++
++vi.mock('astro:content', async () => {
++  const { mockBlogPosts } = await import('../utils')
++
++  return mockBlogPosts([
++    ['post-21.md', { title: 'Post 21', date: new Date('2024-02-24') }],
++    ['post-20.md', { title: 'Post 20', date: new Date('2024-01-24') }],
++    ['post-19.md', { title: 'Post 19', date: new Date('2023-12-24') }],
++    ['post-18.md', { title: 'Post 18', date: new Date('2023-11-24') }],
++    ['post-17.md', { title: 'Post 17', date: new Date('2023-10-24') }],
++    ['post-16.md', { title: 'Post 16', date: new Date('2023-09-24') }],
++    ['post-15.md', { title: 'Post 15', date: new Date('2023-08-24') }],
++    ['post-14.md', { title: 'Post 14', date: new Date('2023-07-24') }],
++    ['post-13.md', { title: 'Post 13', date: new Date('2023-06-24') }],
++    ['post-12.md', { title: 'Post 12', date: new Date('2023-05-24') }],
++    ['post-11.md', { title: 'Post 11', date: new Date('2023-04-24') }],
++    ['post-10.md', { title: 'Post 10', date: new Date('2023-03-24') }],
++    ['post-9.md', { title: 'Post 9', date: new Date('2023-02-24') }],
++    ['post-8.md', { title: 'Post 8', date: new Date('2023-01-24') }],
++    ['post-7.md', { title: 'Post 7', date: new Date('2022-12-24') }],
++    ['post-6.md', { title: 'Post 6', date: new Date('2022-11-24') }],
++    ['post-5.md', { title: 'Post 5', date: new Date('2022-10-24') }],
++    ['post-4.md', { title: 'Post 4', date: new Date('2022-09-24') }],
++    ['post-3.md', { title: 'Post 3', date: new Date('2022-08-24') }],
++    ['post-2.md', { title: 'Post 2', date: new Date('2022-07-24') }],
++    ['post-1.md', { title: 'Post 1', date: new Date('2022-06-24') }],
++  ])
++})
++
++describe('getRSSOptions', () => {
++  test('includes only the last 20 blog posts', async () => {
++    const { items } = await getRSSOptions(new URL('http://example.com'))
++
++    expect(items).toHaveLength(20)
++    expect(getItemAtIndex(items, 0)?.title).toBe('Post 21')
++    expect(getItemAtIndex(items, 19)?.title).toBe('Post 2')
++  })
++
++  test('includes top-level metadata', async () => {
++    const url = new URL('http://example.com')
++
++    const options = await getRSSOptions(url)
++
++    expect(options.title).toBe('Starlight Blog Basics | Blog')
++    expect(options.description).toMatchInlineSnapshot(`"Basic tests for the Starlight Blog plugin."`)
++    expect(options.site).toBe(url)
++    expect(options.customData).toMatchInlineSnapshot(`"<language>fr</language>"`)
++  })
++})
++
++function getItemAtIndex(items: Awaited<ReturnType<typeof getRSSOptions>>['items'], index: number) {
++  return (items as RSSFeedItem[])[index]
++}
+diff --git a/node_modules/starlight-blog/tests/unit/basics/vitest.config.ts b/node_modules/starlight-blog/tests/unit/basics/vitest.config.ts
+new file mode 100644
+index 0000000..1a86dd3
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/basics/vitest.config.ts
+@@ -0,0 +1,10 @@
++import { defineVitestConfig } from '../test'
++
++export default defineVitestConfig(
++  {},
++  {
++    title: 'Starlight Blog Basics',
++    description: 'Basic tests for the Starlight Blog plugin.',
++    defaultLocale: 'fr',
++  },
++)
+diff --git a/node_modules/starlight-blog/tests/unit/prefix/page.test.ts b/node_modules/starlight-blog/tests/unit/prefix/page.test.ts
+new file mode 100644
+index 0000000..552fbe6
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/prefix/page.test.ts
+@@ -0,0 +1,17 @@
++import { describe, expect, test } from 'vitest'
++
++import { getBlogPathWithBase } from '../../../libs/page'
++
++describe('getBlogPathWithBase', () => {
++  test('returns the blog root path', () => {
++    expect(getBlogPathWithBase('/')).toBe('/news')
++  })
++
++  test('returns a blog post path', () => {
++    expect(getBlogPathWithBase('/post-1')).toBe('/news/post-1')
++  })
++
++  test('returns the RSS feed path', () => {
++    expect(getBlogPathWithBase('/rss.xml', true)).toBe('/news/rss.xml')
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/prefix/vitest.config.ts b/node_modules/starlight-blog/tests/unit/prefix/vitest.config.ts
+new file mode 100644
+index 0000000..2f5b7a7
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/prefix/vitest.config.ts
+@@ -0,0 +1,3 @@
++import { defineVitestConfig } from '../test'
++
++export default defineVitestConfig({ prefix: 'news' })
+diff --git a/node_modules/starlight-blog/tests/unit/prev-next-chronological/prev-next.test.ts b/node_modules/starlight-blog/tests/unit/prev-next-chronological/prev-next.test.ts
+new file mode 100644
+index 0000000..8f4d27c
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/prev-next-chronological/prev-next.test.ts
+@@ -0,0 +1,38 @@
++import { describe, expect, test, vi } from 'vitest'
++
++import { getBlogEntry, getBlogStaticPaths } from '../../../libs/content'
++
++vi.mock('astro:content', async () => {
++  const { mockBlogPosts } = await import('../utils')
++
++  return mockBlogPosts([
++    ['post-7.md', { title: 'Home Page', date: new Date('2024-02-24') }],
++    ['post-6.md', { title: 'Home Page', date: new Date('2024-01-24') }],
++    ['post-5.md', { title: 'Home Page', date: new Date('2023-12-24') }],
++    ['post-4.md', { title: 'Home Page', date: new Date('2023-11-24') }],
++    ['post-3.md', { title: 'Home Page', date: new Date('2023-10-24') }],
++    ['post-2.md', { title: 'Home Page', date: new Date('2023-09-24') }],
++    ['post-1.md', { title: 'Home Page', date: new Date('2023-08-24') }],
++  ])
++})
++
++describe('getBlogStaticPaths', () => {
++  test('respects the `prevNextLinksOrder` option in `chronological` order', async () => {
++    const [firstPage, secondPage] = await getBlogStaticPaths()
++
++    expect(firstPage?.props.prevLink).toBeDefined()
++    expect(firstPage?.props.nextLink).toBeUndefined()
++
++    expect(secondPage?.props.prevLink).toBeUndefined()
++    expect(secondPage?.props.nextLink).toBeDefined()
++  })
++})
++
++describe('getBlogEntry', () => {
++  test('respects the `prevNextLinksOrder` option in `chronological` order', async () => {
++    const post = await getBlogEntry('/blog/post-6')
++
++    expect(post.prevLink?.href).toBe('/blog/post-5')
++    expect(post.nextLink?.href).toBe('/blog/post-7')
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/prev-next-chronological/vitest.config.ts b/node_modules/starlight-blog/tests/unit/prev-next-chronological/vitest.config.ts
+new file mode 100644
+index 0000000..e381e15
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/prev-next-chronological/vitest.config.ts
+@@ -0,0 +1,3 @@
++import { defineVitestConfig } from '../test'
++
++export default defineVitestConfig({ prevNextLinksOrder: 'chronological' })
+diff --git a/node_modules/starlight-blog/tests/unit/test.ts b/node_modules/starlight-blog/tests/unit/test.ts
+new file mode 100644
+index 0000000..2d9dbc4
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/test.ts
+@@ -0,0 +1,32 @@
++import { getViteConfig } from 'astro/config'
++
++import { validateConfig, type StarlightBlogUserConfig } from '../../libs/config'
++import { vitePluginStarlightBlogConfig, type StarlightBlogContext } from '../../libs/vite'
++
++export function defineVitestConfig(userConfig: StarlightBlogUserConfig, context?: Partial<StarlightBlogContext>) {
++  const config = validateConfig(userConfig)
++
++  return getViteConfig({
++    plugins: [
++      vitePluginStarlightBlogConfig(config, {
++        defaultLocale: context?.defaultLocale ?? 'en',
++        description: context?.description,
++        site: context?.site,
++        title: context?.title ?? 'Starlight Blog Test',
++        titleDelimiter: context?.titleDelimiter,
++        trailingSlash: context?.trailingSlash ?? 'ignore',
++      }),
++      {
++        name: 'virtual-modules',
++        load(id) {
++          return id === 'virtual:starlight-blog-test'
++            ? `export default ${JSON.stringify({ defaultLocale: { lang: 'en' } })}`
++            : undefined
++        },
++        resolveId(id) {
++          return id === 'virtual:starlight/user-config' ? 'virtual:starlight-blog-test' : undefined
++        },
++      },
++    ],
++  })
++}
+diff --git a/node_modules/starlight-blog/tests/unit/trailing-slash-always/page.test.ts b/node_modules/starlight-blog/tests/unit/trailing-slash-always/page.test.ts
+new file mode 100644
+index 0000000..88252e7
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/trailing-slash-always/page.test.ts
+@@ -0,0 +1,29 @@
++import { describe, expect, test } from 'vitest'
++
++import { getBlogPathWithBase, getPathWithBase } from '../../../libs/page'
++
++describe('getBlogPathWithBase', () => {
++  test('returns the blog root path', () => {
++    expect(getBlogPathWithBase('/')).toBe('/blog/')
++  })
++
++  test('returns a blog post path', () => {
++    expect(getBlogPathWithBase('/post-1')).toBe('/blog/post-1/')
++  })
++
++  test('returns the RSS feed path', () => {
++    expect(getBlogPathWithBase('/rss.xml', true)).toBe('/blog/rss.xml')
++  })
++})
++
++describe('getPathWithBase', () => {
++  describe('trailingSlash', () => {
++    test('does not strip trailing slashes', () => {
++      expect(getPathWithBase('/blog/')).toBe('/blog/')
++    })
++
++    test('ensures trailing slashes', () => {
++      expect(getPathWithBase('/blog')).toBe('/blog/')
++    })
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/trailing-slash-always/vitest.config.ts b/node_modules/starlight-blog/tests/unit/trailing-slash-always/vitest.config.ts
+new file mode 100644
+index 0000000..aea80b3
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/trailing-slash-always/vitest.config.ts
+@@ -0,0 +1,3 @@
++import { defineVitestConfig } from '../test'
++
++export default defineVitestConfig({}, { trailingSlash: 'always' })
+diff --git a/node_modules/starlight-blog/tests/unit/trailing-slash-never/page.test.ts b/node_modules/starlight-blog/tests/unit/trailing-slash-never/page.test.ts
+new file mode 100644
+index 0000000..09db2b8
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/trailing-slash-never/page.test.ts
+@@ -0,0 +1,29 @@
++import { describe, expect, test } from 'vitest'
++
++import { getBlogPathWithBase, getPathWithBase } from '../../../libs/page'
++
++describe('getBlogPathWithBase', () => {
++  test('returns the blog root path', () => {
++    expect(getBlogPathWithBase('/')).toBe('/blog')
++  })
++
++  test('returns a blog post path', () => {
++    expect(getBlogPathWithBase('/post-1/')).toBe('/blog/post-1')
++  })
++
++  test('returns the RSS feed path', () => {
++    expect(getBlogPathWithBase('/rss.xml', true)).toBe('/blog/rss.xml')
++  })
++})
++
++describe('getPathWithBase', () => {
++  describe('trailingSlash', () => {
++    test('strips trailing slashes', () => {
++      expect(getPathWithBase('/blog/')).toBe('/blog')
++    })
++
++    test('does not ensure trailing slashes', () => {
++      expect(getPathWithBase('/blog')).toBe('/blog')
++    })
++  })
++})
+diff --git a/node_modules/starlight-blog/tests/unit/trailing-slash-never/vitest.config.ts b/node_modules/starlight-blog/tests/unit/trailing-slash-never/vitest.config.ts
+new file mode 100644
+index 0000000..68b4160
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/trailing-slash-never/vitest.config.ts
+@@ -0,0 +1,3 @@
++import { defineVitestConfig } from '../test'
++
++export default defineVitestConfig({}, { trailingSlash: 'never' })
+diff --git a/node_modules/starlight-blog/tests/unit/utils.ts b/node_modules/starlight-blog/tests/unit/utils.ts
+new file mode 100644
+index 0000000..c2c3585
+--- /dev/null
++++ b/node_modules/starlight-blog/tests/unit/utils.ts
+@@ -0,0 +1,50 @@
++import { z } from 'astro/zod'
++import { slug } from 'github-slugger'
++import { vi } from 'vitest'
++
++import type { StarlightBlogEntry } from '../../libs/content'
++import { blogEntrySchema } from '../../schema'
++
++export async function mockBlogPosts(posts: Parameters<typeof mockBlogPost>[]) {
++  const mod = await vi.importActual<typeof import('astro:content')>('astro:content')
++  const mockPosts = posts.map((post) => mockBlogPost(...post))
++
++  return {
++    ...mod,
++    getCollection: () => mockPosts,
++  }
++}
++
++function mockBlogPost(id: string, entry: StarlightBlogEntryData): StarlightBlogEntry {
++  return {
++    id: `blog/${id}`,
++    slug: `blog/${slug(id.replace(/\.[^.]+$/, '').replace(/\/index$/, ''))}`,
++    collection: 'docs',
++    data: blogEntrySchema({
++      image: () =>
++        z.object({
++          src: z.string(),
++          width: z.number(),
++          height: z.number(),
++          format: z.union([
++            z.literal('png'),
++            z.literal('jpg'),
++            z.literal('jpeg'),
++            z.literal('tiff'),
++            z.literal('webp'),
++            z.literal('gif'),
++            z.literal('svg'),
++            z.literal('avif'),
++          ]),
++        }),
++    })
++      .passthrough()
++      .parse(entry) as StarlightBlogEntryData,
++    body: '',
++    render: (() => {
++      // We do not care about the render function in the unit tests.
++    }) as StarlightBlogEntry['render'],
++  }
++}
++
++type StarlightBlogEntryData = z.input<ReturnType<typeof blogEntrySchema>> & { title: string }
